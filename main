@@ -98,6 +98,19 @@ void printar_mapa(mapa newMapa, jogador jog) {
 	}
 }
 
+inimigo* GerarInimigo(int numInimigos) {
+	inimigo* n_inimigo = new inimigo[numInimigos];
+	std::string nomes[5] = { "Golem", "Arara", "Bandido", "Coveiro","Pedreiro" };
+
+	for (int i = 0; i < numInimigos; i++) {
+		n_inimigo[i].nome = nomes[rand() % 10];
+		n_inimigo[i].vida = 25 + rand() % 10;
+		n_inimigo[i].arma.danoMin = 5 + rand() % 5;
+		n_inimigo[i].arma.danoMax = 15 + rand() % 5;
+	}
+	return n_inimigo;
+};
+
 fase CriarFase(int numInimigos, inimigo* inimigos, int mapaTamA, int mapaTamL) {
 	fase fase;
 	int posx, posy;
@@ -134,7 +147,6 @@ void Movimentar(jogador jog, fase fase, char c) {
 	if (c == 'd' or 'D') {
 		jog.posx = jog.posx + 1;
 	}
-	return jog;
 }
 
 //Template para definir o dano gerado
@@ -164,14 +176,14 @@ void combate(jogador& jog, inimigo& inimigos) {
 
 	fase fase;
 
-	while (!morreu(fase.inimigos[atual])) {
-		jog = ataque(fase.inimigos[atual], jog);
-		fase.inimigos[atual] = ataque(jog, fase.inimigos[atual]);
+	while (!morreu(fase.inimigos)) {
+		jog = ataque(fase.inimigos, jog);
+		fase.inimigos = ataque(jog, fase.inimigos);
 
-		std::cout << "O inimigo " << fase.inimigos[atual].nome << " te atacou com um(a) " << fase.inimigos[atual].arma.nome << "." << std::endl;
+		std::cout << "O inimigo " << fase.inimigos->nome << " te atacou com um(a) " << fase.inimigos->arma.nome << "." << std::endl;
 		std::cout << "Vida jogador: " << jog.vida << std::endl;
-		std::cout << "Voce atacou " << fase.inimigos[atual].nome << " com sua " << fase.inimigos[4].arma.nome << "." << std::endl;
-		std::cout << "Vida inimigo: " << fase.inimigos[atual].vida << std::endl;
+		std::cout << "Voce atacou " << fase.inimigos->nome << " com sua " << fase.inimigos[4].arma.nome << "." << std::endl;
+		std::cout << "Vida inimigo: " << fase.inimigos->vida << std::endl;
 		std::cout << "" << std::endl;
 	
 		if (morreu(jog)) {
@@ -182,10 +194,10 @@ void combate(jogador& jog, inimigo& inimigos) {
 			return;
 		}
 
-		std::cout << fase.inimigos[atual].nome << " foi morto." << std::endl << std::endl;
+		std::cout << fase.inimigos->nome << " foi morto." << std::endl << std::endl;
 	}
 	std::cout << "*============================*" << std::endl;
-	std::cout << "Parabens, voce passou de fase!" << std::endl;
+	std::cout << "Parabens, voce matou um inimigo!" << std::endl;
 	std::cout << "*============================*" << std::endl;
 }
 
@@ -224,47 +236,12 @@ int main() {
 	fase.nome = "Deserto do Saara";
 	
 	arma A[5];
-	A[0].nome = "Canivete";
-	A[0].danoMax = 5;
-	A[0].danoMin = 1;
 
-	A[1].nome = "Machado";
-	A[1].danoMax = 15;
-	A[1].danoMin = 5;
-
-	A[2].nome = "Arco e flecha";
-	A[2].danoMax = 20;
-	A[2].danoMin = 10;
-
-	A[3].nome = "Pistola";
-	A[3].danoMax = 30;
-	A[3].danoMin = 10;
-
-	A[4].nome = "Espada";
-	A[4].danoMax = 25;
-	A[4].danoMin = 15;
-
+	inimigo inimigos[5];
 	
-	fase.inimigos[0].vida = 100;
-	fase.inimigos[0].nome = "Golem";
-	fase.inimigos[0].arma = A[0];
-
-	fase.inimigos[1].vida = 30;
-	fase.inimigos[1].nome = "Arara";
-	fase.inimigos[1].arma = A[1];
-
-	fase.inimigos[2].vida = 80;
-	fase.inimigos[2].nome = "Bandido";
-	fase.inimigos[2].arma = A[2];
-
-	fase.inimigos[3].vida = 60;
-	fase.inimigos[3].nome = "Coveiro";
-	fase.inimigos[3].arma = A[3];
-
-	fase.inimigos[4].vida = 120;
-	fase.inimigos[4].nome = "Pedreiro";
-	fase.inimigos[4].arma = A[4];
-	
+	for (int i = 0; i < 5; i++) {
+		inimigos[i] = GerarInimigo(5);
+	}
 
 	jogador jog = { 400, A[4] };
 	jog.arma = A[4];
