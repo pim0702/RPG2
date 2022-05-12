@@ -234,8 +234,7 @@ int main() {
 	
 	fase fase;
 	fase.nome = "Deserto do Saara";
-	
-	arma A[5];
+
 
 	inimigo inimigos[5];
 	
@@ -243,8 +242,8 @@ int main() {
 		inimigos[i] = *GerarInimigo(5);
 	}
 
-	jogador jog = { 400, A[4] };
-	jog.arma = A[4];
+	jog.vida = 400;
+	jog.arma = {espada, 15,40};
 
 	
 	jogar_fase(jog, fase);
