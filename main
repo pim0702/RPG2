@@ -240,7 +240,7 @@ int main() {
 	inimigo inimigos[5];
 	
 	for (int i = 0; i < 5; i++) {
-		inimigos[i] = GerarInimigo(5);
+		inimigos[i] = *GerarInimigo(5);
 	}
 
 	jogador jog = { 400, A[4] };
