@@ -17,12 +17,69 @@ void escolhaMenu(int& escolha) {
     std::cout << "| B R A S I L  -  S U R V I V E | " << std::endl;
     std::cout << "*===============================*" << std::endl;
     std::cout << "*==============*" << std::endl;
-    std::cout << "| 1 -> Jogar   |" << std::endl;
-    std::cout << "| 2 -> Sobre   |" << std::endl;
-    std::cout << "| 3 -> Sair    |" << std::endl;
+    std::cout << "| 1 - Jogar   |" << std::endl;
+    std::cout << "| 2 - Sobre   |" << std::endl;
+    std::cout << "| 3 - Sair    |" << std::endl;
     std::cout << "*==============*" << std::endl << std::endl;
-    std::cout << "Escolha a opcao desejada -> ";
+    std::cout << " Sua escolha:  ";
     std::cin >> escolha;
+}
+
+
+const int caminho = 46, pedra = 127, Jog01 = 5, Inimig01 = 21;
+
+struct Arma {
+    int Dmin;
+    int Dmax;
+};
+
+struct Jogador {
+    std::string nome;
+    int posX;
+    int posY;
+    int vida;
+    Arma arma;
+};
+
+struct Inimigo {
+    std::string nome;
+    int vida;
+    Arma arma;
+};
+
+struct Bloco {
+    int caminho;
+    Inimigo* PonteiroInimigo;
+};
+
+struct Mapa {
+    Bloco** bloco;
+    int EixoX;
+    int EixoY;
+};
+
+struct Fase {
+    std::string nome;
+    Mapa mapa;
+    int NumOponentes;
+    Inimigo* inimigo;
+};
+
+Jogador escolha_jogador() {
+
+    Jogador debora;
+    std::cout << "*===============================*" << std::endl;
+    std::cout << "Escolha o nome do seu personagem: " << std::endl;
+    std::cout << "*===============================*" << std::endl;
+    std::cin >> debora.nome;
+    system(CLEAR);
+
+    debora.posX = 0;
+    debora.posY = 0;
+    debora.vida = 300;
+    debora.arma.Dmin = 10;
+    debora.arma.Dmax = 30;
+    return debora;
 }
 
 void sobre() {
@@ -49,63 +106,6 @@ void sobre() {
     std::cout << "*==========================================*" << std::endl << std::endl;
 }
 
-//No mapa a variável do caminho é um int e na impressão recebe um cast forçando a ser imprimido como char.
-const int way = 45, stone = 127, player = 5, enemy = 21;
-
-struct Arma {
-    int Dmin;
-    int Dmax;
-};
-
-struct Jogador {
-    std::string nome;
-    int posX;
-    int posY;
-    int vida;
-    Arma arma;
-};
-
-struct Inimigo {
-    std::string nome;
-    int vida;
-    Arma arma;
-};
-
-struct Bloco {
-    int caminho;
-    Inimigo* pont_inimigo;
-};
-
-struct Mapa {
-    Bloco** bloco;
-    int EixoX;
-    int EixoY;
-};
-
-struct Fase {
-    std::string nome;
-    Mapa mapa;
-    int q_inimigo;
-    Inimigo* inimigo;
-};
-
-Jogador escolha_jogador() {
-    Jogador debora;
-    std::cout << "*===============================*" << std::endl;
-    std::cout << "Escolha o nome do seu personagem: " << std::endl;
-    std::cout << "*===============================*" << std::endl;
-    std::cin >> debora.nome;
-    system(CLEAR);
-
-    debora.posX = 0;
-    debora.posY = 0;
-    debora.vida = 150;
-    debora.arma.Dmin = 10;
-    debora.arma.Dmax = 30;
-    return debora;
-}
-
-//Função que cria um mapa com base em uma matriz alocada dinamicamente
 Mapa CriarMapa(int EixoX, int EixoY) {
     Mapa mapa;
 
@@ -116,34 +116,31 @@ Mapa CriarMapa(int EixoX, int EixoY) {
     for (int i = 0; i < EixoX; i++) {
         mapa.bloco[i] = new Bloco[EixoY];
     }
-    //Aqui a matriz alocada é preenchida com pedras (1 chance em 5) e caminhos livres
     for (int i = 0; i < EixoX; i++) {
         for (int j = 0; j < EixoY; j++) {
             int n = rand() % 5;
             if (n == 0) {
-                mapa.bloco[i][j].caminho = stone;
+                mapa.bloco[i][j].caminho = pedra;
             }
             else {
-                mapa.bloco[i][j].caminho = way;
+                mapa.bloco[i][j].caminho = caminho;
             }
         }
     }
-    //A primeira posição é definida como pedra para não cair nenhum inimigo aqui e o player nascer em cima.
-    mapa.bloco[0][0].caminho = stone;
+    mapa.bloco[0][0].caminho = pedra;
 
     return mapa;
 }
 
-//Essa função é um vetor alocado dinamicamente que é preenchida com inimigos aleatórios
-Inimigo* escolherInimigos(int q_inimigo) {
-    Inimigo* p_inimigo = new Inimigo[q_inimigo];
+Inimigo* escolherInimigos(int NumOponentes) {
+    Inimigo* p_inimigo = new Inimigo[NumOponentes];
     std::string nomes[5] = { "Golem", "Arara", "Bandido", "Coveiro","Pedreiro" };
 
-    for (int i = 0; i < q_inimigo; i++) {
+    for (int i = 0; i < NumOponentes; i++) {
         p_inimigo[i].nome = nomes[rand() % 5];
-        p_inimigo[i].vida = 25 + rand() % 10;
-        p_inimigo[i].arma.Dmin = 5 + rand() % 5;
-        p_inimigo[i].arma.Dmax = 15 + rand() % 5;
+        p_inimigo[i].vida = 50;
+        p_inimigo[i].arma.Dmin = 10 + rand() % 10;
+        p_inimigo[i].arma.Dmax = 10 + rand() % 20;
     }
 
     return p_inimigo;
@@ -154,18 +151,15 @@ Fase CriarFase(int numInimigos, Inimigo* inimigo, int alturaMapa, int larguraMap
 
     fase.mapa = CriarMapa(alturaMapa, larguraMapa);
     fase.nome = "Tumba Negra";
-    fase.q_inimigo = numInimigos;
+    fase.NumOponentes = numInimigos;
     fase.inimigo = inimigo;
 
-    // Preenche o mapa de inimigos aleatoriamente
     for (int x = 0; x < numInimigos; ) {
         int i = rand() % alturaMapa, j = rand() % larguraMapa;
 
-        //Se o caminho estiver livre recebe o endereço de um inimigo
-        if (fase.mapa.bloco[i][j].caminho == way) {
-            fase.mapa.bloco[i][j].caminho = enemy;
-            //Aqui é passado o endereço de cada inimigo do vetor para as posições aleatórias da matriz
-            fase.mapa.bloco[i][j].pont_inimigo = &fase.inimigo[x];
+        if (fase.mapa.bloco[i][j].caminho == caminho) {
+            fase.mapa.bloco[i][j].caminho = Inimig01;
+            fase.mapa.bloco[i][j].PonteiroInimigo = &fase.inimigo[x];
             x++;
         }
     }
@@ -187,22 +181,22 @@ T2 Ataque(T atacante, T2 def) {
     return def;
 }
 
-void batalha(Jogador& jogador, Inimigo& inimigo, int& cont) {
+void duelo(Jogador& jogador, Inimigo& inimigo, int& cont) {
     while (!morreu(jogador) && !morreu(inimigo)) {
         jogador = Ataque(inimigo, jogador);
-        std::cout << "\n\t" << inimigo.nome << " te atacou deixando voce com: " << jogador.vida << " de vida" << std::endl;
+        std::cout << "\n" << inimigo.nome << " te atacou deixando voce com: " << jogador.vida << " de vida" << std::endl;
         inimigo = Ataque(jogador, inimigo);
-        std::cout << "\tAo mesmo tempo voce ataca e o deixa com: " << inimigo.vida << " de vida" << std::endl << std::endl;
+        std::cout << "Ao mesmo tempo voce ataca e o deixa com: " << inimigo.vida << " de vida" << std::endl << std::endl;
         system(PAUSE);
 
         if (morreu(jogador)) {
-            std::cout << "\n\t" << jogador.nome << " voce morreu." << std::endl;
-            std::cout << "\tFIM DE JOGO\n" << std::endl;
+            std::cout << "\n" << jogador.nome << " voce foi derrotado, recolha-se a sua insignificancia" << std::endl;
+            std::cout << "FIM DE JOGO\n" << std::endl;
             system(PAUSE);
             break;
         }
         if (morreu(inimigo)) {
-            std::cout << "\n\t" << inimigo.nome << " morreu " << std::endl << "\t, voce continua sua jornada..." << std::endl << std::endl;
+            std::cout << "\n" << inimigo.nome << " morreu" << ", voce prossegue..." << std::endl << std::endl;
             cont--;
             system(PAUSE);
         }
@@ -210,79 +204,63 @@ void batalha(Jogador& jogador, Inimigo& inimigo, int& cont) {
 }
 
 void Movimentar(Jogador jogador, Fase fase) {
-    //Aqui é onde o player é colocado no mapa
-    int EixoX = jogador.posX, EixoY = jogador.posY;
-    fase.mapa.bloco[EixoX][EixoY].caminho = player;
-    //Esse contador vai diminuindo, e quando chega a zero voce vence o jogo
-    int cont = fase.q_inimigo;
 
-    //Aqui ocorre a impressão principal do mapa
-    for (bool partida = true; partida; ) {
-        //Esse cout fala quantos inimigos a fase possui, e quantos faltam ser derrotados
-        std::cout << "Inimigos (" << cont << " de " << fase.q_inimigo << ")\n\n";
+    int EixoX = jogador.posX, EixoY = jogador.posY;
+    fase.mapa.bloco[EixoX][EixoY].caminho = Jog01;
+    int cont = fase.NumOponentes;
+
+    for (bool loop = true; loop; ) {
+        std::cout << "Inimigos (" << cont << " de " << fase.NumOponentes << ")\n\n";
         for (int i = 0; i < fase.mapa.EixoX; ++i) {
             for (int j = 0; j < fase.mapa.EixoY; ++j)
-                //Aqui ocorre um cast, e os valores inteiros que definem oque há nos blocos são imprimidos como char
                 std::cout << (char)fase.mapa.bloco[i][j].caminho << ' ';
             std::cout << std::endl;
         }
-        std::cout << std::endl << "W, A, S, D = mover | F = sair -> ";
+        std::cout << std::endl << "W A S D = para se mover" << std::endl;
 
-        //Aqui é utilizado o _getch() para a mecânica de movimentação
         int Ncolun = EixoY, NLinha = EixoX;
         switch (_getch()) {
         case 'a': case 'A': --Ncolun; break;
         case 'd': case 'D': ++Ncolun; break;
         case 's': case 'S': ++NLinha; break;
         case 'w': case 'W': --NLinha; break;
-        case 'f': case 'F': partida = false; break;
+        case 'f': case 'F': loop = false; break;
         default: system(CLEAR);
             system(CLEAR);
         }
 
-        //Enquanto a bool partida for true a gameplay ocorre. Apenas é definida para false caso seja pressionado 2 no menu do jogo ou o jogador vença
-        if (partida) {
+        if (loop) {
             NLinha = NLinha < 0 ? NLinha + fase.mapa.EixoX : NLinha % fase.mapa.EixoX;
             Ncolun = Ncolun < 0 ? Ncolun + fase.mapa.EixoY : Ncolun % fase.mapa.EixoY;
 
-            //Esse é o if principal, e nele é usado a função swap que troca dois elementos da matriz, movimentando o player
-            if (fase.mapa.bloco[NLinha][Ncolun].caminho == way) {
+            if (fase.mapa.bloco[NLinha][Ncolun].caminho == caminho) {
                 std::swap(fase.mapa.bloco[NLinha][Ncolun].caminho, fase.mapa.bloco[EixoX][EixoY].caminho);
                 EixoX = NLinha;
                 EixoY = Ncolun;
                 system(CLEAR);
             }
-            else if (fase.mapa.bloco[NLinha][Ncolun].caminho == enemy) {
-
-                //Aqui começa o combate se voce passar por um inimigo
+            else if (fase.mapa.bloco[NLinha][Ncolun].caminho == Inimig01) {
                 system(CLEAR);
-                std::cout << jogador.nome << " pega sua arma e inicia um batalha contra: ";
-
-                //Utilizamos o operador -> parar acessar o ponteiro diretamente
-                std::cout << fase.mapa.bloco[NLinha][Ncolun].pont_inimigo->nome << " (" << fase.mapa.bloco[NLinha][Ncolun].pont_inimigo->vida << " de vida)" << std::endl;
-
-                //Chamada da função batalha, onde passamos por refêrencia o jogador, o ponteiro do inimigos desse bloco e um contador
-                batalha(jogador, *fase.mapa.bloco[NLinha][Ncolun].pont_inimigo, cont);
-
-                //Caso o jogador morra, voltamos ao menu principal
+                std::cout << jogador.nome << " pega sua arma e inicie a batalha contra: ";
+                std::cout << fase.mapa.bloco[NLinha][Ncolun].PonteiroInimigo->nome << " (" << fase.mapa.bloco[NLinha][Ncolun].PonteiroInimigo->vida << " de vida)" << std::endl;
+                duelo(jogador, *fase.mapa.bloco[NLinha][Ncolun].PonteiroInimigo, cont);
                 if (morreu(jogador))
-                    partida = false;
+                    loop = false;
 
-                //Caso todos os inimigos da fase morram, o jogo termina
                 if (cont == 0) {
-                    std::cout << "\n \n Voce venceu, parabens por revigorar o Brasil!!!\n\n\n";
+                    std::cout << "\n \n Voce Sobreviveu, toma aqui seu DollY da Vitoria \n\n\n";
                     system(PAUSE);
-                    partida = false; Ncolun;
+                    loop = false; Ncolun;
                 }
 
-                //Aqui é feita a retirada do inimigo, e a posição fica livre               
                 std::swap(fase.mapa.bloco[NLinha][Ncolun].caminho, fase.mapa.bloco[EixoX][EixoY].caminho);
-                fase.mapa.bloco[EixoX][EixoY].caminho = way;
+                fase.mapa.bloco[EixoX][EixoY].caminho = caminho;
                 EixoX = NLinha;
                 EixoY = Ncolun;
                 system(CLEAR);
-            }
 
+            }
+            
             else {
                 system(CLEAR);
             }
@@ -291,44 +269,40 @@ void Movimentar(Jogador jogador, Fase fase) {
 }
 
 int main() {
-
     setlocale(LC_ALL, "Portuguese");
     srand(time(NULL));
-
     int l = 0, c = 0;
-    //A int abaixo possibilita escolher a quantidade de inimigos (5 é recomendado)
     int num_inimigos = 5;
-    bool menu_on = true;
+    bool Menu = true;
     Jogador jogador;
     Fase fase;
     Inimigo* inimigo;
     int escolha;
 
-    while (menu_on == true) {
+    while (Menu == true) {
         system(CLEAR);
         escolhaMenu(escolha);
 
         switch (escolha) {
-            //O uso de char nesse switch case é possível por causa da função _getch()
         case 1:
             system(CLEAR);
-
+            
             jogador = escolha_jogador();
             inimigo = escolherInimigos(num_inimigos);
             fase = CriarFase(num_inimigos, inimigo, 10, 10);
             Movimentar(jogador, fase);
             break;
 
+        case 3:
+            system(CLEAR);
+            Menu = false;
+            return 0;
+
         case 2:
             system(CLEAR);
             sobre();
-            menu_on = false;
+            Menu = false;
             break;
-
-        case 3:
-            system(CLEAR);
-            menu_on = false;
-            return 0;
 
         default:
             system(CLEAR);
@@ -337,3 +311,4 @@ int main() {
     }
     return 0;
 }
+
