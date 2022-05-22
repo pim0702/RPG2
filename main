@@ -49,7 +49,8 @@ void sobre() {
     std::cout << "*==========================================*" << std::endl << std::endl;
 }
 
-//No mapa a variável do caminho é um int e na impressão recebe um cast forçando a ser imprimido como char.
+
+
 const int way = 45, stone = 127, player = 5, enemy = 21;
 
 struct Arma {
@@ -74,6 +75,10 @@ struct Inimigo {
 struct Bloco {
     int caminho;
     Inimigo* pont_inimigo;
+    bool CaminhoSim;
+    bool FinalSim;
+    bool Resultado;
+    bool PedraSim;
 };
 
 struct Mapa {
@@ -105,7 +110,72 @@ Jogador escolha_jogador() {
     return debora;
 }
 
-//Função que cria um mapa com base em uma matriz alocada dinamicamente
+bool MapaOk(Mapa mapa, int EixoY, int EixoX) {
+
+    mapa.bloco[EixoY][EixoX].CaminhoSim = true; //Faz com que o bloco que está rodando seja verificado como "já está rodando"
+    //Sempre que o bloco retorna algo, o bloco deixa de "estar rodando"
+    //Sempre que o bloco retorna algo, esse retorno é salvo para que o bloco não seja verificado mais de uma vez
+
+    if (mapa.bloco[EixoY][EixoX].FinalSim) { //Se o bloco for o final, retorna true
+        mapa.bloco[EixoY][EixoX].CaminhoSim = false;
+        mapa.bloco[EixoY][EixoX].Resultado = true;
+        return true;
+    }
+    else if (mapa.bloco[EixoY][EixoX].PedraSim) { //Se o bloco for uma pedra retorna false
+        mapa.bloco[EixoY][EixoX].CaminhoSim = false;
+        mapa.bloco[EixoY][EixoX].Resultado = false;
+        return false;
+    }
+    else if (mapa.bloco[EixoY][EixoX].Resultado != 0) { //Se o bloco já teve algum retorno, retorna o Resultadoado já obtido
+        mapa.bloco[EixoY][EixoX].CaminhoSim = false;
+        if (mapa.bloco[EixoY][EixoX].Resultado == 1)
+            return true;
+        else
+            return false;
+    }
+
+    //Tirar o comentário para ver o código funcionando
+    /*system("clear");
+    PrintMapa(mapa);
+    std::cin.get();*/
+
+    //Verifica, na ordem, o blocos adjascentes à direita, baixo, esquerda, e depois em cima
+    //Se o bloco retornar verdadeiro, retorna verdadeiro
+    if (!mapa.bloco[EixoY][EixoX + 1].CaminhoSim) {
+        if (MapaOk(mapa, EixoY, EixoX + 1)) {
+            mapa.bloco[EixoY][EixoX].CaminhoSim = false;
+            mapa.bloco[EixoY][EixoX].Resultado = 1;
+            return true;
+        }
+    }
+    if (!mapa.bloco[EixoY + 1][EixoX].CaminhoSim) {
+        if (MapaOk(mapa, EixoY + 1, EixoX)) {
+            mapa.bloco[EixoY][EixoX].CaminhoSim = false;
+            mapa.bloco[EixoY][EixoX].Resultado = 1;
+            return true;
+        }
+    }
+    if (!mapa.bloco[EixoY][EixoX - 1].CaminhoSim) {
+        if (MapaOk(mapa, EixoY, EixoX - 1)) {
+            mapa.bloco[EixoY][EixoX].CaminhoSim = false;
+            mapa.bloco[EixoY][EixoX].Resultado = 1;
+            return true;
+        }
+    }
+    if (!mapa.bloco[EixoY - 1][EixoX].CaminhoSim) {
+        if (MapaOk(mapa, EixoY - 1, EixoX)) {
+            mapa.bloco[EixoY][EixoX].CaminhoSim = false;
+            mapa.bloco[EixoY][EixoX].Resultado = 1;
+            return true;
+        }
+    }
+
+    //Se nenhum dos blocos adjascentes retornar verdadeiro, retorna falso
+    mapa.bloco[EixoY][EixoX].CaminhoSim = false;
+    mapa.bloco[EixoY][EixoX].Resultado = 2;
+    return false;
+}
+
 Mapa CriarMapa(int EixoX, int EixoY) {
     Mapa mapa;
 
@@ -116,7 +186,6 @@ Mapa CriarMapa(int EixoX, int EixoY) {
     for (int i = 0; i < EixoX; i++) {
         mapa.bloco[i] = new Bloco[EixoY];
     }
-    //Aqui a matriz alocada é preenchida com pedras (1 chance em 5) e caminhos livres
     for (int i = 0; i < EixoX; i++) {
         for (int j = 0; j < EixoY; j++) {
             int n = rand() % 5;
@@ -128,13 +197,12 @@ Mapa CriarMapa(int EixoX, int EixoY) {
             }
         }
     }
-    //A primeira posição é definida como pedra para não cair nenhum inimigo aqui e o player nascer em cima.
     mapa.bloco[0][0].caminho = stone;
-
+    MapaOk(mapa, mapa.EixoY, mapa.EixoX);
     return mapa;
 }
 
-//Essa função é um vetor alocado dinamicamente que é preenchida com inimigos aleatórios
+
 Inimigo* escolherInimigos(int q_inimigo) {
     Inimigo* p_inimigo = new Inimigo[q_inimigo];
     std::string nomes[5] = { "Golem", "Arara", "Bandido", "Coveiro","Pedreiro" };
@@ -149,22 +217,20 @@ Inimigo* escolherInimigos(int q_inimigo) {
     return p_inimigo;
 }
 
-Fase CriarFase(int numInimigos, Inimigo* inimigo, int alturaMapa, int larguraMapa) {
+Fase CriarFase(int numInimigos, Inimigo* inimigo, int EixoYuraMapa, int EixoXguraMapa) {
     Fase fase;
 
-    fase.mapa = CriarMapa(alturaMapa, larguraMapa);
+    fase.mapa = CriarMapa(EixoYuraMapa, EixoXguraMapa);
     fase.nome = "Tumba Negra";
     fase.q_inimigo = numInimigos;
     fase.inimigo = inimigo;
 
-    // Preenche o mapa de inimigos aleatoriamente
+  
     for (int x = 0; x < numInimigos; ) {
-        int i = rand() % alturaMapa, j = rand() % larguraMapa;
+        int i = rand() % EixoYuraMapa, j = rand() % EixoXguraMapa;
 
-        //Se o caminho estiver livre recebe o endereço de um inimigo
         if (fase.mapa.bloco[i][j].caminho == way) {
             fase.mapa.bloco[i][j].caminho = enemy;
-            //Aqui é passado o endereço de cada inimigo do vetor para as posições aleatórias da matriz
             fase.mapa.bloco[i][j].pont_inimigo = &fase.inimigo[x];
             x++;
         }
@@ -210,25 +276,20 @@ void batalha(Jogador& jogador, Inimigo& inimigo, int& cont) {
 }
 
 void Movimentar(Jogador jogador, Fase fase) {
-    //Aqui é onde o player é colocado no mapa
     int EixoX = jogador.posX, EixoY = jogador.posY;
     fase.mapa.bloco[EixoX][EixoY].caminho = player;
-    //Esse contador vai diminuindo, e quando chega a zero voce vence o jogo
     int cont = fase.q_inimigo;
 
-    //Aqui ocorre a impressão principal do mapa
     for (bool partida = true; partida; ) {
-        //Esse cout fala quantos inimigos a fase possui, e quantos faltam ser derrotados
         std::cout << "Inimigos (" << cont << " de " << fase.q_inimigo << ")\n\n";
         for (int i = 0; i < fase.mapa.EixoX; ++i) {
             for (int j = 0; j < fase.mapa.EixoY; ++j)
-                //Aqui ocorre um cast, e os valores inteiros que definem oque há nos blocos são imprimidos como char
                 std::cout << (char)fase.mapa.bloco[i][j].caminho << ' ';
             std::cout << std::endl;
         }
-        std::cout << std::endl << "W, A, S, D = mover | F = sair -> ";
+        std::cout << std::endl << "W, A, S, D = mover ";
 
-        //Aqui é utilizado o _getch() para a mecânica de movimentação
+        
         int Ncolun = EixoY, NLinha = EixoX;
         switch (_getch()) {
         case 'a': case 'A': --Ncolun; break;
@@ -240,7 +301,7 @@ void Movimentar(Jogador jogador, Fase fase) {
             system(CLEAR);
         }
 
-        //Enquanto a bool partida for true a gameplay ocorre. Apenas é definida para false caso seja pressionado 2 no menu do jogo ou o jogador vença
+         //Enquanto a bool partida for true a gameplay ocorre. Apenas é definida para false caso seja pressionado 2 no menu do jogo ou o jogador vença
         if (partida) {
             NLinha = NLinha < 0 ? NLinha + fase.mapa.EixoX : NLinha % fase.mapa.EixoX;
             Ncolun = Ncolun < 0 ? Ncolun + fase.mapa.EixoY : Ncolun % fase.mapa.EixoY;
