@@ -51,7 +51,7 @@ void sobre() {
 
 
 
-const int way = 45, stone = 127, player = 5, enemy = 21;
+const int way = 45, stone = 127, player = 5, enemy = 21, portal = 169;
 
 struct Arma {
     int Dmin;
@@ -134,7 +134,7 @@ bool MapaOk(Mapa mapa, int EixoY, int EixoX) {
             return false;
     }
 
-   
+
     //Verifica, na ordem, o blocos adjascentes à direita, baixo, esquerda, e depois em cima
     //Se o bloco retornar verdadeiro, retorna verdadeiro
     if (!mapa.bloco[EixoY][EixoX + 1].CaminhoSim) {
@@ -194,7 +194,9 @@ Mapa CriarMapa(int EixoX, int EixoY) {
         }
     }
     mapa.bloco[0][0].caminho = stone;
-    MapaOk( mapa, mapa.EixoY, mapa.EixoX);
+    mapa.bloco[10][10].caminho = portal;
+    mapa.bloco[10][10].FinalSim == true;
+    MapaOk(mapa, mapa.EixoY, mapa.EixoX);
     return mapa;
 }
 
@@ -221,7 +223,7 @@ Fase CriarFase(int numInimigos, Inimigo* inimigo, int EixoY_pro_mapa, int EixoX_
     fase.q_inimigo = numInimigos;
     fase.inimigo = inimigo;
 
-  
+
     for (int x = 0; x < numInimigos; ) {
         int i = rand() % EixoY_pro_mapa, j = rand() % EixoX_pro_mapa;
 
@@ -285,7 +287,7 @@ void Movimentar(Jogador jogador, Fase fase) {
         }
         std::cout << std::endl << "W, A, S, D = mover ";
 
-        
+
         int Ncolun = EixoY, NLinha = EixoX;
         switch (_getch()) {
         case 'a': case 'A': --Ncolun; break;
@@ -297,7 +299,7 @@ void Movimentar(Jogador jogador, Fase fase) {
             system(CLEAR);
         }
 
-         //Enquanto a bool partida for true a gameplay ocorre. Apenas é definida para false caso seja pressionado 2 no menu do jogo ou o jogador vença
+        //Enquanto a bool partida for true a gameplay ocorre. Apenas é definida para false caso seja pressionado 2 no menu do jogo ou o jogador vença
         if (partida) {
             NLinha = NLinha < 0 ? NLinha + fase.mapa.EixoX : NLinha % fase.mapa.EixoX;
             Ncolun = Ncolun < 0 ? Ncolun + fase.mapa.EixoY : Ncolun % fase.mapa.EixoY;
@@ -326,7 +328,8 @@ void Movimentar(Jogador jogador, Fase fase) {
                     partida = false;
 
                 //Caso todos os inimigos da fase morram, o jogo termina
-                if (cont == 0) {
+                if (cont == 0 and fase.mapa.bloco[NLinha][Ncolun].caminho == portal
+) {
                     std::cout << "\n \n Voce venceu, parabens por revigorar o Brasil!!!\n\n\n";
                     system(PAUSE);
                     partida = false; Ncolun;
