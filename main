@@ -51,7 +51,7 @@ void sobre() {
 
 
 
-const int way = 45, stone = 127, player = 5, enemy = 21, portal = 169;
+const int way = 45, stone = 127, player = 5, enemy = 21, portal = 35;
 
 struct Arma {
     int Dmin;
@@ -85,6 +85,7 @@ struct Mapa {
     Bloco** bloco;
     int EixoX;
     int EixoY;
+    bool termina;
 };
 
 struct Fase {
@@ -104,7 +105,7 @@ Jogador escolha_jogador() {
 
     debora.posX = 0;
     debora.posY = 0;
-    debora.vida = 150;
+    debora.vida = 1500;
     debora.arma.Dmin = 10;
     debora.arma.Dmax = 30;
     return debora;
@@ -117,7 +118,7 @@ bool MapaOk(Mapa mapa, int EixoY, int EixoX) {
     //Sempre que o bloco retorna algo, esse retorno é salvo para que o bloco não seja verificado mais de uma vez
 
     if (mapa.bloco[EixoY][EixoX].FinalSim == true) { //Se o bloco for o final, retorna true
-        mapa.bloco[EixoY][EixoX].CaminhoSim = false;
+        mapa.bloco[EixoY][EixoX].CaminhoSim = true;
         mapa.bloco[EixoY][EixoX].Resultado = true;
         return true;
     }
@@ -135,7 +136,7 @@ bool MapaOk(Mapa mapa, int EixoY, int EixoX) {
     }
 
 
-    //Verifica, na ordem, o blocos adjascentes à direita, baixo, esquerda, e depois em cima
+    //Verifica os blocos adjascentes à direita, baixo, esquerda, e depois em cima
     //Se o bloco retornar verdadeiro, retorna verdadeiro
     if (!mapa.bloco[EixoY][EixoX + 1].CaminhoSim) {
         if (MapaOk(mapa, EixoY, EixoX + 1)) {
@@ -173,31 +174,32 @@ bool MapaOk(Mapa mapa, int EixoY, int EixoX) {
 }
 
 Mapa CriarMapa(int EixoX, int EixoY) {
-    Mapa mapa;
-
-    mapa.EixoX = EixoX;
-    mapa.EixoY = EixoY;
-    mapa.bloco = new Bloco * [EixoX];
-
-    for (int i = 0; i < EixoX; i++) {
-        mapa.bloco[i] = new Bloco[EixoY];
-    }
-    for (int i = 0; i < EixoX; i++) {
-        for (int j = 0; j < EixoY; j++) {
-            int n = rand() % 5;
-            if (n == 0) {
-                mapa.bloco[i][j].caminho = stone;
-            }
-            else {
-                mapa.bloco[i][j].caminho = way;
+    Mapa mapa{};
+    mapa.termina == false;
+    if (mapa.termina == false) {
+        mapa.EixoX = EixoX;
+        mapa.EixoY = EixoY;
+        mapa.bloco = new Bloco * [EixoX];
+        for (int i = 0; i < EixoX; i++) {
+            mapa.bloco[i] = new Bloco[EixoY];
+        }
+        for (int i = 0; i < EixoX; i++) {
+            for (int j = 0; j < EixoY; j++) {
+                int n = rand() % 10 + 1;
+                if (n <= 6) {
+                    mapa.bloco[i][j].caminho = stone;
+                }
+                else {
+                    mapa.bloco[i][j].caminho = way;
+                }
             }
         }
+        mapa.bloco[0][0].caminho = stone;
+        mapa.bloco[9][9].FinalSim = true;
+        mapa.bloco[9][9].caminho = portal;
+        mapa.termina = MapaOk(mapa, 0, 0);
+        return mapa;
     }
-    mapa.bloco[0][0].caminho = stone;
-    mapa.bloco[10][10].caminho = portal;
-    mapa.bloco[10][10].FinalSim == true;
-    MapaOk(mapa, mapa.EixoY, mapa.EixoX);
-    return mapa;
 }
 
 
@@ -218,7 +220,7 @@ Inimigo* escolherInimigos(int q_inimigo) {
 Fase CriarFase(int numInimigos, Inimigo* inimigo, int EixoY_pro_mapa, int EixoX_pro_mapa) {
     Fase fase;
 
-    fase.mapa = CriarMapa(EixoY_pro_mapa, EixoX_pro_mapa);
+    fase.mapa = CriarMapa( 10, 10);
     fase.nome = "Tumba Negra";
     fase.q_inimigo = numInimigos;
     fase.inimigo = inimigo;
@@ -294,7 +296,6 @@ void Movimentar(Jogador jogador, Fase fase) {
         case 'd': case 'D': ++Ncolun; break;
         case 's': case 'S': ++NLinha; break;
         case 'w': case 'W': --NLinha; break;
-        case 'f': case 'F': partida = false; break;
         default: system(CLEAR);
             system(CLEAR);
         }
@@ -328,8 +329,7 @@ void Movimentar(Jogador jogador, Fase fase) {
                     partida = false;
 
                 //Caso todos os inimigos da fase morram, o jogo termina
-                if (cont == 0 and fase.mapa.bloco[NLinha][Ncolun].caminho == portal
-) {
+                if (cont == 0 and fase.mapa.bloco[NLinha][Ncolun].caminho == portal) {
                     std::cout << "\n \n Voce venceu, parabens por revigorar o Brasil!!!\n\n\n";
                     system(PAUSE);
                     partida = false; Ncolun;
@@ -375,7 +375,7 @@ int main() {
 
             jogador = escolha_jogador();
             inimigo = escolherInimigos(num_inimigos);
-            fase = CriarFase(num_inimigos, inimigo, 30, 30);
+            fase = CriarFase(num_inimigos, inimigo, 10, 10);
             Movimentar(jogador, fase);
             break;
 
